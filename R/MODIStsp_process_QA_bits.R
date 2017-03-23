@@ -31,7 +31,7 @@
 #' (https://r-forge.r-project.org/scm/viewvc.php/pkg/RemoteSensing/R/modis.qc.R?view=markup&root=remotesensing&pathrev=79)
 #'
 #' license GPL 3.0
-#' @importFrom raster getValues NAvalue raster setValues writeRaster
+#' @importFrom raster getValues NAvalue raster setValues writeRaster blockSize writeStart writeValues writeStop
 #' @importFrom bitops bitAnd bitShiftR
 #' @importFrom tools file_path_sans_ext
 MODIStsp_process_QA_bits <- function(out_filename, in_raster_name, bitN, source, 
@@ -46,33 +46,49 @@ MODIStsp_process_QA_bits <- function(out_filename, in_raster_name, bitN, source,
   if (out_format == "ENVI") {
     in_raster_file <- paste0(in_raster_file, ".dat")
   }
-
+  
+  bits <- as.numeric(unlist(strsplit(bitN,"-"))) # retrieve positions of the bits to be extracted
   in_raster <- raster(in_raster_file, format = out_format)				# Open input file
   raster::NAvalue(in_raster) <- as.numeric(nodata_source)					# reassign nodata
-  in_values <- getValues(in_raster)								# Get the values
-
-  bits <- as.numeric(unlist(strsplit(bitN, "-")))		# retrieve positions of the bits to be extracted
-
-  if (bits[1] > 0) {
-    in_values <- bitShiftR(in_values, bits[1])
-  }	# if bits not at the start of the binary word, shift them using bitshifter
-  if (length(bits) > 1) {
-    bitfield_vals <- bitAnd(in_values, 2^(bits[2] - bits[1] + 1) - 1)   # retrieve the values using biAnd on the shifted word
-  }	else {
-    (bitfield_vals <- bitAnd(in_values, 2^(1) - 1))
+  
+  # Accessory function to compute values from bitfields - computation is done on "chunks"
+  # of lines to reduce memory footprint
+  bitfield_comp <- function(in_raster, bits, out_format, nodata_qa_out, out_filename) {
+    out <- raster(in_raster)
+    bs  <- blockSize(out)
+    out <- writeStart(out, 
+                      out_filename, 
+                      format = out_format, 
+                      overwrite = TRUE, 
+                      datatype = "INT1U", 
+                      NAflag = as.numeric(nodata_qa_out)
+                      )
+    for (i in 1:bs$n) {
+      in_values <- getValues(in_raster, row = bs$row[i], nrows = bs$nrows[i])								# Get the values
+      if (bits[1] > 0) {
+        in_values <- bitShiftR(in_values, bits[1])
+      }	# if bits not at the start of the binary word, shift them using bitshifter
+      if (length(bits) > 1) {
+        bitfield_vals <- bitAnd(in_values, 2^(bits[2] - bits[1] + 1) - 1)   # retrieve the values using biAnd on the shifted word
+      }	else {
+        bitfield_vals <- bitAnd(in_values, 2^(1) - 1)
+      }
+      writeValues(out, bitfield_vals, bs$row[i])
+      gc()
+    }
+    writeStop(out)
   }
-
-  in_raster <- setValues(in_raster, values = bitfield_vals)	# Set the retrieved values in the raster
-  writeRaster(in_raster, out_filename, format = out_format, overwrite = TRUE, datatype = "INT1U", NAflag = as.numeric(nodata_qa_out))	# save file
-  if (out_format == "ENVI") {
-    # IF "ENVI", write the nodata value in the header
-    fileConn_meta_hdr <- file(paste0(tools::file_path_sans_ext(out_filename), ".hdr"), "a")  # If output format is ENVI, add data ignore value to the header file
+  
+  bitfield_comp(in_raster, bits, out_format, nodata_qa_out, out_filename)
+  
+  if (out_format == "ENVI") { # IF "ENVI", write the nodata value in the header
+    fileConn_meta_hdr <- file(paste0(tools::file_path_sans_ext(out_filename),".hdr"), "a")  # If output format is ENVI, add data ignore value to the header file
     writeLines(c("data ignore value = ", nodata_qa_out), fileConn_meta_hdr, sep = " ")		# Data Ignore Value
     writeLines("", fileConn_meta_hdr)
     close(fileConn_meta_hdr)
   }
-  xml_file <- paste(out_filename, ".aux.xml", sep = "")		# Delete xml files created by writeRaster
-  unlink(xml_file)
+  # xml_file <- paste(out_filename,".aux.xml",sep = "")		# Delete xml files created by writeRaster
+  # unlink(xml_file)
   gc()	# clean up
 
 } #END
