@@ -34,12 +34,11 @@
 #' @importFrom raster getValues NAvalue raster setValues writeRaster blockSize writeStart writeValues writeStop
 #' @importFrom bitops bitAnd bitShiftR
 #' @importFrom tools file_path_sans_ext
-MODIStsp_process_QA_bits <- function(out_filename, in_raster_name, bitN, source, 
-                                     out_prod_folder, file_prefix, yy, DOY, 
-                                     out_format, nodata_source, 
-                                     nodata_qa_in, nodata_qa_out) {
+MODIStsp_process_QA_bits <- function(out_filename,in_raster_name,bitN, source, out_prod_folder,
+                                     file_prefix, yy, DOY, out_format, nodata_source,nodata_qa_in , nodata_qa_out) {
   
-  in_raster_file <- file.path(out_prod_folder, in_raster_name, paste(file_prefix, "_", in_raster_name, "_", yy, "_", DOY, sep = "")) #define name of input "source" file
+  in_raster_file <- file.path(out_prod_folder, in_raster_name,
+                              paste(file_prefix,"_",in_raster_name,"_",yy,"_", DOY, sep = "")) #define name of input "source" file
   if (out_format == "GTiff")  {
     in_raster_file <- paste0(in_raster_file, ".tif")
   }
