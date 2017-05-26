@@ -104,6 +104,7 @@
 #' @importFrom RCurl getBinaryURL
 #' @importFrom stringr str_locate
 #' @importFrom parallel detectCores
+#' @importFrom raster beginCluster endCluster
 #' @import gWidgets
 #' @import gWidgetsRGtk2
 
@@ -131,14 +132,14 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
   
   # Intialize variables ----------------------------------------------------- 
   #^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  
+  comp_par = TRUE
   # Fix on multiple nodata values
   suppressWarnings(nodata_in[is.na(as.numeric(nodata_in))] <- "None" )
   suppressWarnings(quality_nodata_in[is.na(as.numeric(quality_nodata_in))] <- "None" )
   # FIXME: as.integer(nodata) cause nodata ranges (e.g. 249-255) to be suppressed. 
   # So, in this cases nodata values will not
   # be recognised. This problem will be solved in future with a cycle on nodata range.
-  
+ 
   if (nodata_change == "No") {
     nodata_out <- nodata_in
   }  # if nodata chande set to no, set ou_nodata to in_nodata
@@ -154,7 +155,9 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
   ### Initialize number of cores for gdalwarp (equal to ncpus - 2 OR 10 if ncp####
 
   ncores <- min(c(10, parallel::detectCores() - 2))
-  
+  if (comp_par) {
+    raster::beginCluster(ncores)
+  }
   #^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   #  Verify if bands needed for computing spectral indexes and/or quality indicators are already selected
   #  if not, select them and set the "delete" option for them to 1
@@ -956,6 +959,7 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
               # ^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^
               
               for (band in which(indexes_bandsel == 1)) {
+
                 indexes_band <- indexes_bandnames[band] 	# index name
                 formula      <- indexes_formula[band]				#index formula
                 mess_text    <- paste("Computing", sens_sel, indexes_band, "for date:", date_name)
@@ -985,8 +989,10 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
                                            file_prefix = file_prefix,
                                            yy = yy, out_format = out_format, 
                                            DOY = DOY, 
-                                           scale_val = scale_val )
+                                           scale_val = scale_val, 
+                                           comp_par = comp_par)
                 }
+
               }
               
               # ---------------------------------- ----------------------------------------------#
@@ -1149,6 +1155,10 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
                           rts             = rts)
     } #End Cycle on quality_bandsel
     
+  }
+  
+  if (comp_par) {
+    raster::endCluster()
   }
   #- ------------------------------------------------------------------------------- -#
   # Close GUI and clean-up
