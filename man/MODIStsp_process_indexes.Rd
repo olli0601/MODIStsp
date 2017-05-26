@@ -6,7 +6,7 @@
 \usage{
 MODIStsp_process_indexes(out_filename, formula, bandnames, nodata_out,
   out_prod_folder, indexes_nodata_out, file_prefix, yy, DOY, out_format,
-  scale_val)
+  scale_val, comp_par)
 }
 \arguments{
 \item{out_filename}{basename of the file in to which save results}

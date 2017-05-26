@@ -29,15 +29,18 @@
 #' @note License: GPL 3.0
 #' @importFrom raster NAvalue raster writeRaster
 #' @importFrom tools file_path_sans_ext
+#' @importFrom raster clusterR 
+#' @importFrom stringr str_replace fixed
 MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
                                      nodata_out, out_prod_folder,
                                      indexes_nodata_out, file_prefix, 
-                                     yy, DOY, out_format, scale_val) {
+                                     yy, DOY, out_format, scale_val, comp_par) {
 
   # Retrieve necessary filenames (get names of single band files on the basis of Index formula)
 
-  call_string <- "tmp_index <- index("   # initialize the "call string " for the computation
-  fun_string <- "index <- function("		 # initialize the "fun_string" --> in the end, fun_string contains a complete function definition
+  call_string  <- "tmp_index <- index("   # initialize the "call string " for the computation
+  fun_string   <- "index <- function("		# initialize the "fun_string" --> in the end, fun_string contains a complete function definition
+  stack_string <- "tmp_stack <- raster::stack("   # initialize the "stack_string" --> used in case of parallel computation
   # Parsing it allows to create on the fly a function to compute the specific index required
   # search in bandnames the original bands required for the index
   for (band in seq(along = bandnames)) {
@@ -59,9 +62,11 @@ MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
       raster::NAvalue(temp_raster) <- as.numeric(nodata_out[band])  # assign NA value
       assign(temp_bandname, temp_raster) # assign the data to a object with name = bandname
       # add an "entry" in call_string (additional parameter to be passed to function
-      call_string <- paste0(call_string, temp_bandname, "=", temp_bandname, "," )
+      call_string   <- paste0(call_string, temp_bandname, "=", temp_bandname, "," )
       # add an "entry" in fun_string (additional input parameter)
-      fun_string  <- paste0(fun_string, temp_bandname, "=", temp_bandname, "," )  
+      fun_string    <- paste0(fun_string, temp_bandname, "=", temp_bandname, "," )  
+      # add an "entry" in stack_string (additional input in the stack)
+      stack_string  <- paste0(stack_string, temp_bandname, ",")
     }
   }
   call_string <- paste0(substr(call_string, 1, nchar(call_string) - 1), ")")  #Finalize the call_string
@@ -72,14 +77,20 @@ MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
     # otherwise, they are written as integer -10000 - 10000
     fun_string <- paste0(fun_string, "...)", "{round(10000*(", formula, "))}") # Finalize the fun_string
   }
+  stack_string  <- stringr::str_replace(stack_string, stringr::fixed(", )"), ")")
+  eval(parse(text = fun_string))     # Parse "fun_string" to create a new function 
+  if (!comp_par) {
+    eval(parse(text = call_string))    # parse call_string to launch the new function for index computation
+  } else {
+    temp_stack <- eval(parse(text = stack_string))
+    tmp_index  <- raster::clusterR(temp_stack, overlay, args = list(fun = index))
+  }
   
-  eval(parse(text = fun_string))     # Parse "fun_string" to create a new function
-  eval(parse(text = call_string))    # parse call_string to launch the new function for index computation
-
+  
   # Save output and remove aux file
   raster::NAvalue(tmp_index) <- as.numeric(indexes_nodata_out)
-  writeRaster(tmp_index, out_filename, format = out_format, NAflag = as.numeric(indexes_nodata_out), 
-              datatype = if (scale_val == "Yes"){"FLT4S"} else {"INT2S"}, overwrite = TRUE)
+  raster::writeRaster(tmp_index, out_filename, format = out_format, NAflag = as.numeric(indexes_nodata_out), 
+                      datatype = if (scale_val == "Yes"){"FLT4S"} else {"INT2S"}, overwrite = TRUE)
   # IF "ENVI", write the nodata value in the header
   if (out_format == "ENVI") { 
     # If output format is ENVI, add data ignore value to the header file
@@ -90,8 +101,8 @@ MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
     close(fileConn_meta_hdr)
   }
   # Delete xml files created by writeRaster
-  xml_file <- paste0(out_filename, ".aux.xml")		
-  unlink(xml_file)
+  # xml_file <- paste0(out_filename, ".aux.xml")		
+  # unlink(xml_file)
 
   gc()
 
