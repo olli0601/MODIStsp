@@ -29,7 +29,7 @@
 #' @note License: GPL 3.0
 #' @importFrom raster NAvalue raster writeRaster
 #' @importFrom tools file_path_sans_ext
-#' @importFrom raster clusterR 
+#' @importFrom raster clusterR overlay
 #' @importFrom stringr str_replace fixed
 MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
                                      nodata_out, out_prod_folder,
@@ -62,13 +62,13 @@ MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
       raster::NAvalue(temp_raster) <- as.numeric(nodata_out[band])  # assign NA value
       assign(temp_bandname, temp_raster) # assign the data to a object with name = bandname
       # add an "entry" in call_string (additional parameter to be passed to function
-      call_string   <- paste0(call_string, temp_bandname, "=", temp_bandname, "," )
+      call_string   <- paste0(call_string, temp_bandname, "=", temp_bandname, ", " )
       # add an "entry" in fun_string (additional input parameter)
-      fun_string    <- paste0(fun_string, temp_bandname, "=", temp_bandname, "," )  
+      fun_string    <- paste0(fun_string, temp_bandname, "=", temp_bandname, ", " )  
       # add an "entry" in stack_string (additional input in the stack)
-      stack_string  <- paste0(stack_string, temp_bandname, ",")
+      stack_string  <- paste0(stack_string, temp_bandname, ", ")
     }
-  }
+}
   call_string <- paste0(substr(call_string, 1, nchar(call_string) - 1), ")")  #Finalize the call_string
   if (scale_val == "Yes") {
     # if scale_val, indices are written as float -1 - 1
@@ -77,13 +77,14 @@ MODIStsp_process_indexes <- function(out_filename, formula, bandnames,
     # otherwise, they are written as integer -10000 - 10000
     fun_string <- paste0(fun_string, "...)", "{round(10000*(", formula, "))}") # Finalize the fun_string
   }
-  stack_string  <- stringr::str_replace(stack_string, stringr::fixed(", )"), ")")
+  stack_string  <- paste0(str_sub(stack_string, 1, -3), ")")
+  # stringr::str_replace(stack_string, stringr::fixed(", "), ")")
   eval(parse(text = fun_string))     # Parse "fun_string" to create a new function 
   if (!comp_par) {
     eval(parse(text = call_string))    # parse call_string to launch the new function for index computation
   } else {
     temp_stack <- eval(parse(text = stack_string))
-    tmp_index  <- raster::clusterR(temp_stack, overlay, args = list(fun = index))
+    tmp_index  <- raster::clusterR(temp_stack, raster::overlay, args = list(fun = index))
   }
   
   
