@@ -142,7 +142,7 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
   dir.create(out_folder_mod, recursive = TRUE, showWarnings = FALSE) # create out folder if not existing
   out_prod_folder <- file.path(out_folder, main_out_folder)  # main output folder --> define on the basis of product name and create if necessary
   dir.create(out_prod_folder, showWarnings = FALSE, recursive = TRUE)
-  tmp_prod_folder <- file.path(out_prod_folder, "tmp") # directory to store temporary [virtual] rasters
+  # tmp_prod_folder <- file.path(out_prod_folder, "tmp") # directory to store temporary [virtual] rasters
   start_year      <- unlist(strsplit(start_date, "[.]"))[1]
   end_year        <- unlist(strsplit(end_date, "[.]"))[1]
   
@@ -646,7 +646,7 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
                   dir.create(file.path(out_prod_folder, bandnames[band]), 
                              showWarnings = FALSE, recursive = TRUE)
                   bands       <- paste(as.character(bands), collapse = "", sep = " ")					# Convert to character
-                  outfile     <- paste0(tmp_prod_folder, "/", bandnames[band], "_", yy, "_", DOY, ".tif")  	# Create name for the temporary tif mosaic
+                  # outfile     <- paste0(tmp_prod_folder, "/", bandnames[band], "_", yy, "_", DOY, ".tif")  	# Create name for the temporary tif mosaic
                   outfile     <- paste0(bandnames[band], "_", yy, "_", DOY, ".tif")  	# Create name for the temporary tif mosaic
                   # NOTE: Change outrep_file to a list of rep files: only one for original bands, multiple for indexes and quality
                   
@@ -665,7 +665,7 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
                   if (file.exists(outrep_file) == FALSE | reprocess == "Yes") {
                     
                     files_in <- file.path(out_folder_mod, modislist)
-                    dir.create(tmp_prod_folder, recursive = TRUE, showWarnings = FALSE)
+                    # dir.create(tmp_prod_folder, recursive = TRUE, showWarnings = FALSE)
                     # ---------------------------------------------------------------------------------#
                     # Convert to output projection, extent and format using gdalwarp ----
                     # ---------------------------------------------------------------------------------#
@@ -912,7 +912,7 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
                     }
                     
                     xml_file <- paste0(outrep_file, ".aux.xml")		# Delete xml files created by gdalwarp
-                    unlink(tmp_prod_folder, recursive = TRUE)					# Delete temporary files in temp folder
+                    # unlink(tmp_prod_folder, recursive = TRUE)					# Delete temporary files in temp folder
                   }
                 }  # ENDIF band selected for processing
               }	# END Cycle on available MODIS Bands
@@ -1081,12 +1081,12 @@ MODIStsp_process <- function(sel_prod, start_date, end_date, out_folder,
       
       MODIStsp_vrt_create(out_prod_folder = out_prod_folder, 
                           meta_band       = bandnames[band],
-                          file_prefixes   = file_prefixes, 
-                          sens_sel        = sens_sel, 
-                          ts_format       = ts_format,  
+                          file_prefixes, 
+                          sens_sel, 
+                          ts_format,  
                           nodata_value    = nodata_out[band], 
-                          out_format      = out_format, 
-                          rts             = rts)
+                          out_format, 
+                          rts)
     } #End Cycle on bandsel
     # Create virtual files for QI layers
     for (band in which(indexes_bandsel == 1)) {
