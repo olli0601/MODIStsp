@@ -1,5 +1,4 @@
-
-#' MODIStsp_vrt_create
+#' @title create MODIStsp virtual time series
 #' @description	Function used to create virtual files from time series of single-band 
 #' files corresponding to different acquisition dates
 #'
@@ -91,7 +90,6 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
       doy_max        <- max(doys[which(years == max(years))])
       year_max       <- max(years)
 
-
       if (ts_format == "ENVI Meta Files" | ts_format == "ENVI and GDAL") {
 
         if (out_format == "ENVI") {
@@ -102,6 +100,7 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
           nsamp       <- (strsplit(readLines(fileConn_hd)[4], "=")[[1]])[2]
           nrow        <- (strsplit(readLines(fileConn_hd)[5], "=")[[1]])[2]
           close(fileConn_hd)
+         
         }
 
         if (out_format == "GTiff") {
@@ -111,7 +110,7 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
         }
 
         # Write the ENVI meta file
-        meta_dir <- file.path(out_prod_folder, "Time_Series", "ENVI_META")
+        meta_dir <- file.path(out_prod_folder, "Time_Series", "ENVI_META", sens_sel, meta_band)
         dir.create(meta_dir, showWarnings = FALSE, recursive = TRUE)
         meta_filename <- file.path(meta_dir, paste(file_prefix, meta_band, doy_min, year_min,
                                                    doy_max, year_max, "META.dat", sep = "_"))  # define fileneame for meta
@@ -151,11 +150,11 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
       # Write a gdal vrt file
       if (ts_format == "GDAL vrt Files" | ts_format == "ENVI and GDAL") {
 
-        meta_dir <- file.path(out_prod_folder, "Time_Series", "GDAL_vrt")
+        meta_dir <- file.path(out_prod_folder, "Time_Series", "GDAL_vrt", sens_sel, meta_band)
         dir.create(meta_dir, showWarnings = F, recursive = TRUE)
         meta_filename <- file.path(meta_dir, paste(file_prefix, meta_band, doy_min,
                                                    year_min, doy_max, year_max,
-                                                   "GDAL_vrt.vrt",
+                                                   "vrt.vrt",
                                                    sep = "_"))
         gdalbuildvrt(out_meta_files, meta_filename, separate = TRUE, 
                      srcnodata = nodata_value, vrtnodata = nodata_value)
@@ -165,7 +164,7 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
       # If "rts" selected, also build Raster Time Series "R" output files
       if (rts == "Yes") {
 
-        meta_dir <- file.path(out_prod_folder, "Time_Series/RData")
+        meta_dir <- file.path(out_prod_folder, "Time_Series", "RData", sens_sel, meta_band)
         dir.create(meta_dir, showWarnings = FALSE, recursive = TRUE)
         # raster_ts <- rts(out_meta_files,temp_dates)
         # NAvalue(raster_ts@raster) <- as.integer(nodata_value)
@@ -174,7 +173,7 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
         raster_ts <- setZ(raster_ts, temp_dates, name = "time")  # Add the "time" dimension to the rasterstack
         RData_filename <- file.path(meta_dir, paste(file_prefix, meta_band, doy_min,
                                                     year_min, doy_max, year_max,
-                                                    "RData.RData",
+                                                    ".RData",
                                                     sep = "_"))
         save(raster_ts, file = RData_filename)
 
