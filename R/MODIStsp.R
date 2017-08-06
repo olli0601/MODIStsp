@@ -11,7 +11,7 @@
 #'  (default=NULL): if defined, the processing options which define the extent, the
 #'  selected tiles and the "Full Tile / Resized" options are not considered; instead, new
 #'  files are created on the extent of the provided spatial file.
-#' @param scrollWindow (optional) logical parameter: if TRUE, the GUI window is opened
+#' @param scroll_window (optional) logical parameter: if TRUE, the GUI window is opened
 #'  fullscreen with scrollbars (this is useful on devices with small display). If using a
 #'  device with a display resolution >= 1024x768, leaving this parameter to FALSE is
 #'  suggested.
@@ -69,19 +69,21 @@
 #'   MODIStsp(gui = FALSE, options_file = "X:/yourpath/youroptions.json",
 #'     spatial_file_path = single_shape )}
 
-MODIStsp <- function(gui = TRUE, options_file = NULL,
-                     spatial_file_path = NULL, scrollWindow = FALSE, test = -1) {
-
+MODIStsp <- function(gui               = TRUE,
+                     options_file      = NULL,
+                     spatial_file_path = NULL,
+                     scroll_window     = FALSE,
+                     test              = -1) {
+  
   options("guiToolkit" = "RGtk2")
-
+  
   # Make so that "raster" functions doesn't automatically add extensions on output files
-  # prevopt <- raster::rasterOptions()$setfileext
   raster::rasterOptions(setfileext = FALSE)
-
+  
   #- ------------------------------------------------------------------------ -#
   #  Initialize project
   #- ------------------------------------------------------------------------ -#
-
+  
   # If test mode is selected, change other parameters
   if (test > -1) {
     gui <- FALSE
@@ -92,19 +94,19 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
                                   full.names = TRUE))
     # if test=0, select the test file randomly
     if (test == 0) {
-      test <- sample(seq_along(test_files),1)
-      message(paste0("Randomly selected test ",test,"."))
+      test <- sample(seq_along(test_files), 1)
+      message(paste0("Randomly selected test ", test, "."))
     } else if (test > length(test_files)) {
-      stop(paste0("Value of argument 'test' is too high: only ",length(test_files),
+      stop(paste0("Value of argument 'test' is too high: only ", length(test_files),
                   " test Option Files are available."))
     }
     # check that the offline HDF files were unzipped
     tests_hdf_zipped <- list.files(system.file("Test_files", package = "MODIStsp"),
                                    "\\.hdf\\.zip$",
                                    full.names = TRUE)
-    for (test_hdf in gsub("\\.zip$","",tests_hdf_zipped)) {
+    for (test_hdf in gsub("\\.zip$", "", tests_hdf_zipped)) {
       if (!file.exists(test_hdf)) {
-        unzip(zipfile = paste0(test_hdf,".zip"),
+        unzip(zipfile = paste0(test_hdf, ".zip"),
               files   = basename(test_hdf),
               exdir   = dirname(test_hdf),
               unzip   = "internal")
@@ -114,33 +116,33 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
     options_file <- test_files[test]
     # Workaround: if a test with http download was selected,
     # open the GUI so that the user can insert his credentials.
-    if (test %in% c(4,5)) {
+    if (test %in% c(4, 5)) {
       direct_username <- readline(prompt = "Enter your USGS username: ")
       direct_password <- readline(prompt = "Enter your password: ")
     }
   }
-
+  
   # On interactive execution, load Rgtk2
-
+  
   if (gui) {
     if (!pacman::p_exists("gWidgetsRGtk2", local = TRUE)) {
-
+      
       message(paste0("Library 'gWidgetsRGtk2' is not installed. It is required to run
-                     MODIStsp!\n\n","Do you want to install it now?"), type = " y / n")
+                     MODIStsp!\n\n", "Do you want to install it now?"), type = " y / n")
       inst_gw <- readline()
       if (inst_gw == "y") {
         pacman::p_load("gWidgetsRGtk2")
       } else {
         stop("MODIStsp can not work in Interactive mode without gWidgetsRGtk2! Exiting!")
       }
-
+      
     }
     options("guiToolkit" = "RGtk2")
   }
-
+  
   # Check GDAL version
   if (is.null(getOption("gdalUtils_gdalPath"))) {
-
+    
     welcome_text <- paste0("Welcome to MODIStsp!\n\nWe will now search for a valid GDAL ",
                            "installation - please wait\n(this will happen only once)")
     if (gui) {
@@ -159,24 +161,24 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
                                        rgdal::getGDALVersionInfo(str = "--version")))
   # GDAL version used during the last test (for now used as minimum required version)
   gdal_minversion <- package_version("1.11.1")
-  gdal_HDFsupport <- length(grep("HDF4", gdalUtils::gdalinfo(formats = TRUE))) > 0
-
+  gdal_hdf_support <- length(grep("HDF4", gdalUtils::gdalinfo(formats = TRUE))) > 0
+  
   if (gdal_version < gdal_minversion) {
     stop(paste0("GDAL version must be at least ", gdal_minversion, ". Please update it."))
   }
-
-  if (!gdal_HDFsupport) {
+  
+  if (!gdal_hdf_support) {
     stop("Your local GDAL installation does not support HDF4 format. Please install HDF4
          support and recompile GDAL.")
   }
-
+  
   message("GDAL version in use: ", as.character(gdal_version))
-
+  
   # Parameter retrieval and Folder Initialization -----
   if (is.null(options_file) & gui == FALSE) {
     stop("Please provide a valid \"option_file\" path value (or run with gui=TRUE).")
   }
-
+  
   # Folders in which the JSON/RData files (previous settings and product descriptions) are saved
   if (is.null(options_file)) {
     previous_dir <- system.file("Previous", package = "MODIStsp")
@@ -184,24 +186,27 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
     previous_dir <- dirname(options_file)
   }
   prodopts_dir <- system.file("Previous", package = "MODIStsp")
-  dir.create(previous_dir, showWarnings = FALSE, recursive = TRUE) #; dir.create(log_dir, showWarnings = FALSE, recursive = TRUE)
+  dir.create(previous_dir, showWarnings = FALSE, recursive = TRUE)
   dir.create(prodopts_dir, showWarnings = FALSE, recursive = TRUE)
-
+  
   # Previous options file (or file passed by user in non-interactive mode)
   previous_jsfile <- if (is.null(options_file)) {
     file.path(previous_dir, "MODIStsp_Previous.json")
   } else {
     options_file
   }
-  xml_file      <- system.file("ExtData","MODIStsp_ProdOpts.xml", package = "MODIStsp")  #XML file describing MODIS products
-  prodopts_file <- file.path(prodopts_dir, "MODIStsp_ProdOpts.RData") # this is created to speed up XML reading (done only the first time)
-
+  #XML file describing MODIS products
+  xml_file      <- system.file("ExtData", "MODIStsp_ProdOpts.xml", package = "MODIStsp")
+  
+  # RData file created to speed up options reading (done only the first time)
+  prodopts_file <- file.path(prodopts_dir, "MODIStsp_ProdOpts.RData")
+  
   #- ------------------------------------------------------------------------------- -#
   #  Set general processing options - used at first execution to initialize GUI
   #- ------------------------------------------------------------------------------- -#
-
-  MOD_proj_str <- "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"
-
+  
+  mod_proj_str <- "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs"
+  
   # Load options if existing, otherwise initialise them ----
   if (file.exists(previous_jsfile)) {
     general_opts <- RJSONIO::fromJSON(previous_jsfile)
@@ -227,7 +232,7 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
       download_server = "http",
       download_range  = "full",
       proj            = "Sinusoidal",
-      user_proj4      = "+proj=sinu +lon_0=0 +x_0=0 +y_0=0 +a=6371007.181 +b=6371007.181 +units=m +no_defs",
+      user_proj4      = mod_proj_str,
       out_res_sel     = "Native",
       out_res         = "",
       full_ext        = "Full Tiles Extent",
@@ -292,31 +297,31 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
       gWidgets::dispose(mess_lab)
     }
   }
-
+  
   #launch the GUI if on an interactive session (i.e., gui = T) and wait for return----
   if (gui) {
     if (exists("welcome_lab")) {
       gWidgets::dispose(welcome_lab)
     }
-    Quit <- MODIStsp_GUI(general_opts    = general_opts,
+    quit <- MODIStsp_GUI(general_opts    = general_opts,
                          prod_opt_list   = prod_opt_list,
                          MODIStsp_dir    = system.file(package = "MODIStsp"),
                          previous_jsfile = previous_jsfile,
                          prodopts_file   = prodopts_file,
-                         scrollWindow    = scrollWindow
+                         scroll_window   = scroll_window
     )
-
+    
   } else {
-    Quit <- FALSE
+    quit <- FALSE
   }
-  start.time <- Sys.time()
-
+  start_time <- Sys.time()
+  
   # Launch the processing ----
-  # When GUI is closed (or in a non-interactive run): If not Quit selected, restore the
+  # When GUI is closed (or in a non-interactive run): If not quit selected, restore the
   # user selected options from previous file and launch the processing ----
-
-  if (!Quit) {
-
+  
+  if (!quit) {
+    
     if (file.exists(previous_jsfile)) {
       general_opts <- RJSONIO::fromJSON(previous_jsfile)
     } else {
@@ -332,7 +337,7 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
     # retrieve options relative to the selected product from the "prod_opt_list" data frame
     prod_opts  <- prod_opt_list[[general_opts$sel_prod]][[general_opts$prod_version]]
     custom_idx <- general_opts$custom_indexes[[general_opts$sel_prod]][[general_opts$prod_version]]
-
+    
     # Workaround to avoid error if only one custom index exists
     if (class(custom_idx) == "character") {
       custom_idx <- data.frame(indexes_bandnames  = custom_idx["indexes_bandnames"],
@@ -341,29 +346,29 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
                                indexes_nodata_out = custom_idx["indexes_nodata_out"],
                                stringsAsFactors   = FALSE)
     }
-
+    
     # Create variables needed to launch the processing
-
+    
     general_opts$start_date <- as.character(
       format(as.Date(general_opts$start_date), "%Y.%m.%d")
     )
     general_opts$end_date  <- as.character(
       format(as.Date(general_opts$end_date), "%Y.%m.%d")
     )
-
+    
     # If the product is NOT tiled, change or_proj to WGS84 and or_res from metres to degrees
     if (prod_opts$tiled == 0) {
-      MOD_proj_str         <- "+init=epsg:4008 +proj=longlat +ellps=clrk66 +no_defs"
+      mod_proj_str         <- "+init=epsg:4008 +proj=longlat +ellps=clrk66 +no_defs"
       prod_opts$native_res <- format(as.numeric(prod_opts$native_res) * (0.05 / 5600))
     }
     # get native resolution if out_res empty (Probably obsolete...)
     if (general_opts$out_res == "" | general_opts$out_res_sel == "Native") {
       general_opts$out_res <- prod_opts$native_res
     }
-
+    
     # Changes to perform in the case spatial_file_path is defined
     if (!is.null(spatial_file_path)) {
-
+      
       # Check if the input file is a valid spatial file and redefine the bounding box
       external_bbox <- try(bbox_from_file(file_path = spatial_file_path,
                                           out_crs   = general_opts$user_proj4),
@@ -372,14 +377,14 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
         stop(external_bbox)
       }
       general_opts$bbox <- external_bbox
-
+      
       # Redefine the out_folder including the file name as subfolder
       # (this to avoid that, running in a cycle, files are overwritten every time)
       general_opts$out_folder <- file.path(
         general_opts$out_folder,
         tools::file_path_sans_ext(basename(spatial_file_path))
       )
-
+      
       # # If out_folder already exists, create a new one with a suffix
       # if (file.exists(general_opts$out_folder)) {
       #   tmp_counter   <- 1
@@ -390,29 +395,29 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
       #   }
       #   general_opts$out_folder <- out_newfolder
       # }
-
+      
       # Overwrite the full_ext option (avoids that , if the options_file specifies a full
       # processing, the incorrect parameter is passed)
       general_opts$full_ext <- "Resized"
-
+      
       # Automatically retrieve the tiles requested to cover the extent
-      modis_grid           <- get(load(system.file("ExtData","MODIS_Tiles.RData",
+      modis_grid           <- get(load(system.file("ExtData", "MODIS_Tiles.RData",
                                                    package = "MODIStsp")))
       external_bbox_mod    <- reproj_bbox(external_bbox,
                                           general_opts$user_proj4,
-                                          MOD_proj_str,
+                                          mod_proj_str,
                                           enlarge = TRUE)
       d_bbox_mod_tiled     <- raster::crop(modis_grid, raster::extent(external_bbox_mod))
       general_opts$start_x <- min(d_bbox_mod_tiled$H)
       general_opts$end_x   <- max(d_bbox_mod_tiled$H)
       general_opts$start_y <- min(d_bbox_mod_tiled$V)
       general_opts$end_y   <- max(d_bbox_mod_tiled$V)
-
+      
     }
-
+    
     # if out_folder[_mod] is set to "$tempdir" or "$modispath",
     # define the path (used in test mode)
-    for (sel_out_folder in c("out_folder","out_folder_mod")) {
+    for (sel_out_folder in c("out_folder", "out_folder_mod")) {
       if (general_opts[[sel_out_folder]] == "$tempdir") {
         general_opts[[sel_out_folder]] <- tempdir()
       }
@@ -420,7 +425,7 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
         general_opts[[sel_out_folder]] <- system.file("Test_files", package = "MODIStsp")
       }
     }
-
+    
     # launch MODIStsp_process to Download and preprocess the selected images ----
     MODIStsp_process(
       sel_prod           = general_opts$sel_prod,
@@ -433,15 +438,15 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
       sensor             = general_opts$sensor,
       download_server    = general_opts$download_server,
       user               = if (exists("direct_username")) {
-        direct_username
-      } else {
-        general_opts$user
-      },
+                              direct_username
+                            } else {
+                              general_opts$user
+                            },
       password           = if (exists("direct_password")) {
-        direct_password
-      } else {
-        general_opts$password
-      },
+                              direct_password
+                            } else {
+                              general_opts$password
+                            },
       https              = prod_opts$http,
       ftps               = prod_opts$ftp,
       start_x            = general_opts$start_x,
@@ -458,7 +463,7 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
       resampling         = general_opts$resampling,
       ts_format          = general_opts$ts_format,
       compress           = general_opts$compress,
-      MOD_proj_str       = MOD_proj_str,
+      mod_proj_str       = mod_proj_str,
       outproj_str        = general_opts$user_proj4,
       nodata_in          = prod_opts$nodata_in,
       nodata_out         = prod_opts$nodata_out,
@@ -486,7 +491,7 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
       use_aria           = general_opts$use_aria,
       download_range     = general_opts$download_range
     )
-
+    
     # At end of succesfull execution, save the options used in the main output folder
     optfilename  <- file.path(general_opts$out_folder,
                               paste0("MODIStsp_", Sys.Date(), ".json"))
@@ -494,19 +499,17 @@ MODIStsp <- function(gui = TRUE, options_file = NULL,
     write(RJSONIO::toJSON(general_opts), optfilename)
     
     # If running in test mode, check the output created
-    if (test>0) {
+    if (test > 0) {
       MODIStest_check_md5(test = test)
     }
     
     # Clean up at end of processing ----
-    end.time   <- Sys.time()
-    time.taken <- end.time - start.time
-    print(time.taken)
-    gc()
+    end_time   <- Sys.time()
+    time_taken <- end_time - start_time
+    message(time_taken)
   } else {
-    # End If on "Quit" --> If "Quit" above is skipped and program terminates
-    message("[", date(), "] ", " You Selected to Quit! Goodbye!")
+    # End If on "quit" --> If "quit" above is skipped and program terminates
+    message("[", date(), "] ", " You Selected to quit! Goodbye!")
   }
-
-  # on.exit(raster::rasterOptions(setfileext = prevopt))
+  
 }

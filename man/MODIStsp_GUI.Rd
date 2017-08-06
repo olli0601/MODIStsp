@@ -4,7 +4,7 @@
 \alias{MODIStsp_GUI}
 \title{MODIStsp_GUI}
 \usage{
-MODIStsp_GUI(general_opts, prod_opt_list, scrollWindow, MODIStsp_dir,
+MODIStsp_GUI(general_opts, prod_opt_list, scroll_window, MODIStsp_dir,
   previous_jsfile, prodopts_file)
 }
 \arguments{
@@ -12,7 +12,7 @@ MODIStsp_GUI(general_opts, prod_opt_list, scrollWindow, MODIStsp_dir,
 
 \item{prod_opt_list}{List of MODIS products specifications (read from MODIStsp_ProdOpts.xml file)}
 
-\item{scrollWindow}{logical parameter passed by MODIStsp main function.}
+\item{scroll_window}{logical parameter passed by MODIStsp main function.}
 
 \item{MODIStsp_dir}{main folder of the package}
 
@@ -21,7 +21,7 @@ MODIStsp_GUI(general_opts, prod_opt_list, scrollWindow, MODIStsp_dir,
 \item{prodopts_file}{rdata file containing info about MODIS products}
 }
 \value{
-Quit - Logical - tells the main if running processing or exiting (also, Processing
+quit - Logical - tells the main if running processing or exiting (also, Processing
 options are saved in "previous" file and (if "Save options" is pressed) in user's selected file)
 }
 \description{

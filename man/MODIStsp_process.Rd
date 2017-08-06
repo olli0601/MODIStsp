@@ -7,13 +7,13 @@
 MODIStsp_process(sel_prod, start_date, end_date, out_folder, out_folder_mod,
   reprocess = "Yes", delete_hdf = "No", sensor, download_server, user,
   password, https, ftps, start_x, start_y, end_x, end_y, bbox, out_format,
-  compress, out_res_sel, out_res, native_res, tiled, MOD_proj_str, outproj_str,
+  compress, out_res_sel, out_res, native_res, tiled, mod_proj_str, outproj_str,
   nodata_in, nodata_out, nodata_change, scale_val, scale_factor, offset, rts,
   datatype, bandsel, bandnames, indexes_bandsel, indexes_bandnames,
   indexes_formula, indexes_nodata_out, quality_bandnames, quality_bandsel,
-  quality_bitN, quality_source, quality_nodata_in, full_ext, quality_nodata_out,
-  file_prefixes, main_out_folder, resampling, ts_format, use_aria = TRUE,
-  download_range = "full", gui = TRUE)
+  quality_bit_n, quality_source, quality_nodata_in, quality_nodata_out,
+  full_ext, file_prefixes, main_out_folder, resampling, ts_format,
+  use_aria = TRUE, download_range = "full", gui = TRUE)
 }
 \arguments{
 \item{sel_prod}{string selected MODIS product}
@@ -67,7 +67,7 @@ dates (Default = 'Yes')}
 
 \item{tiled}{0/1 1 = tiled product; 0 = nontiled product (resolution 0.05 deg)}
 
-\item{MOD_proj_str}{string proj4 string for MODIS product native projection}
+\item{mod_proj_str}{string proj4 string for MODIS product native projection}
 
 \item{outproj_str}{string proj4 string of selected output projection}
 
@@ -110,7 +110,7 @@ set to  1 for indexes to be processed}
 \item{quality_bandsel}{array of lenght equal to number of available quality indicators,
 set to  1 for indicators to be processed}
 
-\item{quality_bitN}{list of strings with number of entries equal to number of
+\item{quality_bit_n}{list of strings with number of entries equal to number of
 quality indicators. each entry caontains position of bits corresponding to a QI
 (e.g., 0-1)}
 
@@ -119,9 +119,9 @@ its source aggregated quality assurance layer}
 
 \item{quality_nodata_in}{Always 255}
 
-\item{full_ext}{string ("Full_Ext" or "Resized")}
-
 \item{quality_nodata_out}{Always 255}
+
+\item{full_ext}{string ("Full_Ext" or "Resized")}
 
 \item{file_prefixes}{output file prefix according to selelected product (e.g., MOD13Q1)}
 
@@ -151,8 +151,7 @@ If not, direct processing messages to the log}
 main function of MODIStsp tool. Takes as input processing parameters
 specified by the user using MODIStsp_GUI and saved in MODIStsp_Previous.json
 (Interactive use), or a user specified JSON file (batch use)
-(See MODIStsp_main for details ) and performs all required
-processing.
+(See MODIStsp_main for details ) and performs all required processing.
 }
 \details{
 After retrieving the input processing options, the function

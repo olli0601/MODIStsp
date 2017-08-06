@@ -5,7 +5,7 @@
 \title{MODIStsp}
 \usage{
 MODIStsp(gui = TRUE, options_file = NULL, spatial_file_path = NULL,
-  scrollWindow = FALSE, test = -1)
+  scroll_window = FALSE, test = -1)
 }
 \arguments{
 \item{gui}{logical parameter (TRUE: the GUI is opened before processing; FALSE: the
@@ -19,7 +19,7 @@ processing options (default: MODIStsp_Previous.json in subdir Previous);}
 selected tiles and the "Full Tile / Resized" options are not considered; instead, new
 files are created on the extent of the provided spatial file.}
 
-\item{scrollWindow}{(optional) logical parameter: if TRUE, the GUI window is opened
+\item{scroll_window}{(optional) logical parameter: if TRUE, the GUI window is opened
 fullscreen with scrollbars (this is useful on devices with small display). If using a
 device with a display resolution >= 1024x768, leaving this parameter to FALSE is
 suggested.}
