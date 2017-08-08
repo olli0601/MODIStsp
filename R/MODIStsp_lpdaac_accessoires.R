@@ -305,6 +305,7 @@ lpdaac_getmod_dates <- function(dates, date_dirs) {
 #' @import RCurl
 lpdaac_getmod_names <- function(http, ftp, used_server, user, password, date_dir,
                                 v, h, tiled, out_folder_mod, gui) {
+ 
   getlist <- 0
   class(getlist) <- "try-error"
   ce <- 0

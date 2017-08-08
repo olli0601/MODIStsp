@@ -3,8 +3,8 @@ testthat::test_that(
   "Tests on MODIStsp", {
 
     library(testthat)
-    skip_on_cran()
-    skip_on_travis()
+    # skip_on_cran()
+    # skip_on_travis()
 
     ### Test 1: test of the basic operations of MODIStsp. ###
     #   The test downloads two bands and extract one quality indicator from a single locale

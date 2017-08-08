@@ -16,22 +16,22 @@
 #' @author Luigi Ranghetti, phD (2015) \email{ranghetti.l@@irea.cnr.it}
 #' @note License: GPL 3.0
 
-Args <- commandArgs(TRUE)
+args <- commandArgs(TRUE)
 
 require(MODIStsp)
 
 MODIStsp_dir <- system.file(package = "MODIStsp")
 
-gui <- if (length(Args) >= 1) {
-  as.logical(Args[1])
+gui <- if (length(args) >= 1) {
+  as.logical(args[1])
 } else{
   TRUE
 }
-options_file <- if (length(Args) >= 2) {
-  if (Args[2] == "" | Args[2] == "NULL") {
+options_file <- if (length(args) >= 2) {
+  if (args[2] == "" | args[2] == "NULL") {
     NULL
   } else {
-    Args[2]
+    args[2]
   }
 } else {
   NULL
@@ -45,8 +45,9 @@ if (!is.null(options_file)) {
 }
 dir.create(log_dir, showWarnings = FALSE)
 # File to store the Log
-outfile <- file.path(log_dir, 
-                     paste0("MODIStsp_", strftime(Sys.time(), "%y%m%d_%H%M%S"), ".Rout"))
+outfile <- file.path(log_dir,
+                     paste0("MODIStsp_",
+                            strftime(Sys.time(), "%y%m%d_%H%M%S"), ".Rout"))
 
 sink(outfile, split = TRUE, type = c("output"))
 output <- MODIStsp(gui = gui, options_file = options_file)

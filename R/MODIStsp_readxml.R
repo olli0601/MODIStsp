@@ -1,12 +1,11 @@
-
 #' MODIStsp_read_xml
 #' @description function used to parse the XML file used to store the characteristics of
 #' MODIS Land Products and store them in the "prod_opts" data frame
 #' @details The function parses the XML file product by product, stores data in a data frame
 #' and saves the data frame within the "MODIStsp_previous" RData file as a list of lists
-#' @param prodopts_file string filename of the RData in which to store the data 
+#' @param prodopts_file string filename of the RData in which to store the data
 #' parsed from the XML file
-#' @param xml_file string filename of the XML file containing the MODIS products 
+#' @param xml_file string filename of the XML file containing the MODIS products
 #' characteristics
 #' @return NULL - retrieved data are stored in the specified RData file
 #'
@@ -17,7 +16,7 @@
 #' @importFrom plyr revalue
 #' @importFrom hash hash
 MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file) {
-  
+
   prod_opt_list <- NULL
 
   xmlfile <- xmlParse(xml_file)  # initialize xml parsing
@@ -25,14 +24,14 @@ MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file
   xmltop  <- xmlRoot(xmlfile) # gives content of root
 
   names_products <- names(xmlChildren(xmltop)) # names of the single products
-  names_products <- names_products[names_products != "comment"] 
+  names_products <- names_products[names_products != "comment"]
   # cycle on available products
   for (prod in names_products) {
-    
+
     prodopts <- list()	# initialize the prodopts list
     prodopts_name <- xmlToList(xmltop[[prod]][["name"]])
     n_versions <- xmlSize(xmltop[[prod]][["versions"]]) # number of available versions
-    
+
     for (n_version in 1:n_versions) {
 
       # General info
@@ -56,7 +55,7 @@ MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file
       prodopts[[version_name]]$http <- hash("Terra" = http_terra, "Aqua" = http_aqua)
       prodopts[[version_name]]$ftp  <- hash("Terra" = ftp_terra, "Aqua" = ftp_aqua)
       prodopts[[version_name]]$multiband_bsq <- T
-      
+
       # Band info
       nbands <- xmlSize(xmltop[[prod]][["versions"]][[n_version]][["bands"]])  # number of original layers
       bandnames <- band_fullname <- datatype <- nodata_in <- nodata_out <- scale_factor <- offset <- NULL
@@ -78,14 +77,14 @@ MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file
                                       "16-bit signed integer" = "Int16",
                                       "16-bit unsigned integer" = "UInt16",
                                       "32-bit signed integer" = "Int32",
-                                      "32-bit unsigned integer" = "UInt32"), 
+                                      "32-bit unsigned integer" = "UInt32"),
                           warn_missing = F)
       prodopts[[version_name]]$datatype     <- datatype
       prodopts[[version_name]]$nodata_in    <- nodata_in
       prodopts[[version_name]]$nodata_out   <- nodata_out
       prodopts[[version_name]]$scale_factor <- scale_factor
       prodopts[[version_name]]$offset       <- offset
-      
+
       # Indices info
       nindexes <- xmlSize(xmltop[[prod]][["versions"]][[n_version]][["indexes"]])		# number of Spectral Indexes
       if (nindexes > 0) {
@@ -97,14 +96,14 @@ MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file
           indexes_formulas   <- c(indexes_formulas,   xmlToList(xmltop[[prod]][["versions"]][[n_version]][["indexes"]][[index]][["indexes_formula"]]))
           indexes_nodata_out <- c(indexes_nodata_out, xmlToList(xmltop[[prod]][["versions"]][[n_version]][["indexes"]][[index]][["indexes_nodata_out"]]))
         } #End Cycle on index
-        
+
         prodopts[[version_name]]$indexes_bandnames  <- indexes_bandnames		# store in prodopts
         prodopts[[version_name]]$indexes_fullnames  <- indexes_fullnames
         prodopts[[version_name]]$indexes_formulas   <- indexes_formulas
         prodopts[[version_name]]$indexes_nodata_out <- indexes_nodata_out
-        
+
       }   #end if on indexes existence
-      
+
       # Quality flag info
       nquality <- xmlSize(xmltop[[prod]][["versions"]][[n_version]][["quality_indicators"]])	# number of QIs
       if (nquality > 0 ) {
@@ -122,9 +121,9 @@ MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file
         prodopts[[version_name]]$quality_bitN       <- quality_bitN
         prodopts[[version_name]]$quality_nodata_in  <- rep("255", length(prodopts[[version_name]]$quality_bandnames))  # nodata in for quality bands (dummy - always 255)
         prodopts[[version_name]]$quality_nodata_out <- rep("255", length(prodopts[[version_name]]$quality_bandnames)) # nodata out for quality bands (always 255)
-        
+
       } # end if on quality existence
-      
+
     } # end of n_versions cycle
 
     # At each cycle, add product name to mod_prod_list and prodopts to prod_opt_list
@@ -135,7 +134,7 @@ MODIStsp_read_xml <- function(prodopts_file = prodopts_file, xml_file = xml_file
   # Add attributes to these 3 lists (this is used as a check when charging them)
   attr(prod_opt_list, "GeneratedBy")     <- "MODIStsp"
   attr(prod_opt_list, "MODIStspVersion") <- packageVersion("MODIStsp")
-  
+
   # Save the products list and the chars of the products in previous file
   dir.create(dirname(prodopts_file), recursive = TRUE, showWarnings = FALSE)
   save(prod_opt_list, file = prodopts_file)

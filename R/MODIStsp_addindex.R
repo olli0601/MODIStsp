@@ -91,15 +91,17 @@ MODIStsp_addindex <- function(
   # Initialization and retrieval of parameters ----
   if (gui) {
     if (!pacman::p_exists("gWidgetsRGtk2", local = TRUE)) {
-      message(strwrap("Library 'gWidgetsRgtk2' is not installed. It is required
-                      to run MODIStsp! Do you want to install it now?"),
+      message(glue::glue("Library 'gWidgetsRgtk2' is not installed but it is ", 
+                         "required to run MODIStsp in interactive mode! \n\n", 
+                         "Do you want to install it now?"),
               type = " y / n")
       inst_gw <- readline()
       if (inst_gw == "y") {
         pacman::p_load("gWidgetsRGtk2")
       } else {
-        stop("MODIStsp can not work in Interactive mode withouth gWidgetsRGtk2 !
-             Exiting !")
+        stop(glue::glue("MODIStsp can not work in Interactive mode without ", 
+                        "gWidgetsRGtk2 ! \n\n",
+                        "Aborting !"))
       }
 
     }
@@ -113,7 +115,7 @@ MODIStsp_addindex <- function(
                             option_jsfile)
   prodopts_file <- ifelse(is.null(prodopts_file),
                           file.path(previous_dir, "MODIStsp_prodopts.RData"),
-                          option_jsfile)
+                          prodopts_file)
   general_opts  <- RJSONIO::fromJSON(previous_jsfile)
 
   # Restore MODIS products if existing, otherwise retrieve  from xml file ----
@@ -450,24 +452,23 @@ MODIStsp_addindex <- function(
         switch(
           as.character(catch_err),
           "0" = svalue(notes_lab) <- format(
-            strwrap("The new Spectral Index was correctly added! To use it,
-            click 'DONE', then re-open the 'Select Processing Layer' Window."),
+            glue::glue("The new Spectral Index was correctly added! \n",
+                       "To use it, click 'DONE', then re-open the 'Select \n",
+                       "Processing Layer' Window."),
             justify = "centre"
           ),
-          "1" = svalue(notes_lab) <- strwrap(
-            paste0("ERROR ! The Formula of the new Index is not computable.
-              Please check it ! Valid Band Names are: ",
+          "1" = svalue(notes_lab) <- glue::glue(
+            "ERROR ! The Formula of the new Index is not computable. ",
+             "Please check it ! \n\n Valid Band Names are: \n",
                    paste(avail_refbands, collapse = ", "),
-                   ".") , width = 80, simplify = TRUE),
-          "2" = svalue(notes_lab) <- format(
-            "ERROR ! Index full or short name is already present.\n
-            Please specify different ones.",
-            justify = "centre"
+                   "."),
+          "2" = svalue(notes_lab) <- glue::glue(
+            "ERROR ! Index full or short name is already present.\n\n", 
+            "Please specify different ones."
           ),
-          "3" = svalue(notes_lab) <- format(
-            "ERROR ! Please provide valid values for the Index Acronym,
-            its fullname and the Formula.",
-            justify = "centre"
+          "3" = svalue(notes_lab) <- glue::glue(
+            "ERROR ! Please provide valid values for the Index Acronym, ",
+            "its fullname and the Formula."
           )
         )
 
@@ -495,12 +496,12 @@ MODIStsp_addindex <- function(
       horizontal = FALSE
     )
     notes_lab <- glabel(
-      text       = strwrap(paste(
-        "ERROR ! The Formula of the new Index is not computable. Please check
-        it ! Valid Band Names are: ",
-        paste(avail_refbands, collapse = ", "),
-        ".")
-        , width = 80, simplify = TRUE),
+      text       = glue::glue(
+        "ERROR ! The Formula of the new Index is not computable. Please ",
+        "check it !\n\n ",
+        "Valid Band Names are: ", paste(avail_refbands, collapse = ", "),
+        "."
+      ),
       container  = notes_group,
       horizontal = TRUE, editable = FALSE
     )
@@ -554,23 +555,25 @@ MODIStsp_addindex <- function(
                                     NULL},
                    prod_opt_list,
                    previous_jsfile)
-      message(strwrap(
-        "The new Index was correctly added! It will be available from the
-         next execution of MODIStsp()."))
+      message(glue::glue(
+        "The new Index was correctly added! \n\n It will be available from ", 
+        "the next execution of MODIStsp()."))
     } else if (catch_err == 1) {
-      stop(
-        paste0(
-          strwrap("The formula of the new index is not computable for this
-                  product. Please check it. (Valid band names are: "),
-               paste(avail_refbands, collapse = ", "), ".")
-      )
+      stop(glue::glue(
+        "The formula of the new index is not computable for this product. ",
+        "Please check it. \n\n",
+        "(Valid band names are: ",
+        paste(avail_refbands, collapse = ", "),
+        "."
+      ))
     } else if (catch_err == 2) {
-      stop(strwrap("The index acronym and/or full name are already present;
-                    please specify different ones."))
+      stop(glue::glue(
+        "The index acronym and/or full name are already present; \n", 
+        "Please specify different ones."))
     } else if (catch_err == 3) {
-      stop(format(strwrap("Some parameters are still blank; please provide valid
-                    values for the index name, the index fullname and the
-                    formula."), justify = "centre"))
+      stop(glue::glue(
+        "Some parameters are still blank; please provide valid values for \n", 
+        "the index name, the index fullname and the formula."))
     }
 
   } # end of non-gui actions

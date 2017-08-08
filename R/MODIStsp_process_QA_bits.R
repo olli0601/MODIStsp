@@ -6,19 +6,19 @@
 #' the bitfield representation (bitN), the function extracts the correct information exploiting
 #' bitwise operators, and save the result in a new raster image
 #' @param out_filename string file name of the output raster files containing QI values
-#' @param in_raster_name name of the MODIS band containing data from which the bit field 
+#' @param in_raster_name name of the MODIS band containing data from which the bit field
 #' corresponding to the quality indicator must be extracted
-#' @param bitN position of the bits corresponding to the quality indicator 
+#' @param bitN position of the bits corresponding to the quality indicator
 #' (e.g., 0-1 = first two bits; 2-5: bits from 2 to 5, etc.)
-#' @param source "name" of the MODIS band containing the values from which to extract 
+#' @param source "name" of the MODIS band containing the values from which to extract
 #' the quality indicator (e.g., State_1km)
-#' @param out_prod_folder main folder used for storing the output data in MODIStsp 
+#' @param out_prod_folder main folder used for storing the output data in MODIStsp
 #' processing. New quality indicator files are stored in out_prod_folder/derived_band
 #' @param file_prefix files_prefixes used to create output file names in MODIStsp (e.g., MOD13Q1)
 #' @param yy year of considered image
 #' @param DOY DOY of considered image
 #' @param out_format output format (ENVI or GTiff)
-#' @param nodata_source nodata values of the MODIS band containing data from which 
+#' @param nodata_source nodata values of the MODIS band containing data from which
 #' the bit field corresponding to the quality indicator must be extracted
 #' @param nodata_qa_in string in nodata for quality bands ("255")
 #' @param nodata_qa_out string out nodata for quality bands ("255")
@@ -27,18 +27,18 @@
 #' @author Lorenzo Busetto, phD (2014-2015) \email{busetto.l@@irea.cnr.it}
 #' @author Luigi Ranghetti, phD (2015) \email{ranghetti.l@@irea.cnr.it}
 #' @note License: GPL 3.0
-#' Based on the "modis.qc.R" script by Yann Chemin (2008) 
+#' Based on the "modis.qc.R" script by Yann Chemin (2008)
 #' (https://r-forge.r-project.org/scm/viewvc.php/pkg/RemoteSensing/R/modis.qc.R?view=markup&root=remotesensing&pathrev=79)
 #'
 #' license GPL 3.0
 #' @importFrom raster getValues NAvalue raster setValues writeRaster
 #' @importFrom bitops bitAnd bitShiftR
 #' @importFrom tools file_path_sans_ext
-MODIStsp_process_QA_bits <- function(out_filename, in_raster_name, bitN, source, 
-                                     out_prod_folder, file_prefix, yy, DOY, 
-                                     out_format, nodata_source, 
+MODIStsp_process_QA_bits <- function(out_filename, in_raster_name, bitN, source,
+                                     out_prod_folder, file_prefix, yy, DOY,
+                                     out_format, nodata_source,
                                      nodata_qa_in, nodata_qa_out) {
-  
+
   in_raster_file <- file.path(out_prod_folder, in_raster_name, paste(file_prefix, "_", in_raster_name, "_", yy, "_", DOY, sep = "")) #define name of input "source" file
   if (out_format == "GTiff")  {
     in_raster_file <- paste0(in_raster_file, ".tif")

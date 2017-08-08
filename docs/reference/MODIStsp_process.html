@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>MODIStsp_process — MODIStsp_process • MODIStsp</title>
+<title>MODIStsp_process � MODIStsp_process • MODIStsp</title>
 
 <!-- jquery -->
 <script src="https://code.jquery.com/jquery-3.1.0.min.js" integrity="sha384-nrOSfDHtoPMzJHjVTdCopGqIqeYETSXhZDFyniQ8ZHcVy08QesyHcnOUpMpqnmWq" crossorigin="anonymous"></script>
@@ -148,20 +148,19 @@
     <p>main function of MODIStsp tool. Takes as input processing parameters
 specified by the user using MODIStsp_GUI and saved in MODIStsp_Previous.json
 (Interactive use), or a user specified JSON file (batch use)
-(See MODIStsp_main for details ) and performs all required
-processing.</p>
+(See MODIStsp_main for details ) and performs all required processing.</p>
     
 
     <pre class="usage"><span class='fu'>MODIStsp_process</span>(<span class='no'>sel_prod</span>, <span class='no'>start_date</span>, <span class='no'>end_date</span>, <span class='no'>out_folder</span>, <span class='no'>out_folder_mod</span>,
   <span class='kw'>reprocess</span> <span class='kw'>=</span> <span class='st'>"Yes"</span>, <span class='kw'>delete_hdf</span> <span class='kw'>=</span> <span class='st'>"No"</span>, <span class='no'>sensor</span>, <span class='no'>download_server</span>, <span class='no'>user</span>,
   <span class='no'>password</span>, <span class='no'>https</span>, <span class='no'>ftps</span>, <span class='no'>start_x</span>, <span class='no'>start_y</span>, <span class='no'>end_x</span>, <span class='no'>end_y</span>, <span class='no'>bbox</span>, <span class='no'>out_format</span>,
-  <span class='no'>compress</span>, <span class='no'>out_res_sel</span>, <span class='no'>out_res</span>, <span class='no'>native_res</span>, <span class='no'>tiled</span>, <span class='no'>MOD_proj_str</span>, <span class='no'>outproj_str</span>,
+  <span class='no'>compress</span>, <span class='no'>out_res_sel</span>, <span class='no'>out_res</span>, <span class='no'>native_res</span>, <span class='no'>tiled</span>, <span class='no'>mod_proj_str</span>, <span class='no'>outproj_str</span>,
   <span class='no'>nodata_in</span>, <span class='no'>nodata_out</span>, <span class='no'>nodata_change</span>, <span class='no'>scale_val</span>, <span class='no'>scale_factor</span>, <span class='no'>offset</span>, <span class='no'>rts</span>,
   <span class='no'>datatype</span>, <span class='no'>bandsel</span>, <span class='no'>bandnames</span>, <span class='no'>indexes_bandsel</span>, <span class='no'>indexes_bandnames</span>,
   <span class='no'>indexes_formula</span>, <span class='no'>indexes_nodata_out</span>, <span class='no'>quality_bandnames</span>, <span class='no'>quality_bandsel</span>,
-  <span class='no'>quality_bitN</span>, <span class='no'>quality_source</span>, <span class='no'>quality_nodata_in</span>, <span class='no'>full_ext</span>, <span class='no'>quality_nodata_out</span>,
-  <span class='no'>file_prefixes</span>, <span class='no'>main_out_folder</span>, <span class='no'>resampling</span>, <span class='no'>ts_format</span>, <span class='kw'>use_aria</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>,
-  <span class='kw'>download_range</span> <span class='kw'>=</span> <span class='st'>"full"</span>, <span class='kw'>gui</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
+  <span class='no'>quality_bit_n</span>, <span class='no'>quality_source</span>, <span class='no'>quality_nodata_in</span>, <span class='no'>quality_nodata_out</span>,
+  <span class='no'>full_ext</span>, <span class='no'>file_prefixes</span>, <span class='no'>main_out_folder</span>, <span class='no'>resampling</span>, <span class='no'>ts_format</span>,
+  <span class='kw'>use_aria</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>, <span class='kw'>download_range</span> <span class='kw'>=</span> <span class='st'>"full"</span>, <span class='kw'>gui</span> <span class='kw'>=</span> <span class='fl'>TRUE</span>)</pre>
     
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a> Arguments</h2>
     <table class="ref-arguments">
@@ -266,7 +265,7 @@ dates (Default = 'Yes')</p></td>
       <td><p>0/1 1 = tiled product; 0 = nontiled product (resolution 0.05 deg)</p></td>
     </tr>
     <tr>
-      <th>MOD_proj_str</th>
+      <th>mod_proj_str</th>
       <td><p>string proj4 string for MODIS product native projection</p></td>
     </tr>
     <tr>
@@ -345,7 +344,7 @@ set to  1 for indexes to be processed</p></td>
 set to  1 for indicators to be processed</p></td>
     </tr>
     <tr>
-      <th>quality_bitN</th>
+      <th>quality_bit_n</th>
       <td><p>list of strings with number of entries equal to number of
 quality indicators. each entry caontains position of bits corresponding to a QI
 (e.g., 0-1)</p></td>
@@ -360,12 +359,12 @@ its source aggregated quality assurance layer</p></td>
       <td><p>Always 255</p></td>
     </tr>
     <tr>
-      <th>full_ext</th>
-      <td><p>string ("Full_Ext" or "Resized")</p></td>
-    </tr>
-    <tr>
       <th>quality_nodata_out</th>
       <td><p>Always 255</p></td>
+    </tr>
+    <tr>
+      <th>full_ext</th>
+      <td><p>string ("Full_Ext" or "Resized")</p></td>
     </tr>
     <tr>
       <th>file_prefixes</th>

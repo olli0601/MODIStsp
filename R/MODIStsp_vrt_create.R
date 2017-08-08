@@ -1,24 +1,23 @@
-
 #' @title Create MODIStsp virtual files
-#' @description	Function used to create virtual files from time series of single-band 
+#' @description	Function used to create virtual files from time series of single-band
 #' files corresponding to different acquisition dates
 #'
 #' @details	The function takes as input the folder in which the single-band files are
-#' stored, and cretes a ENVI Meta file and/or a GDAL vrt file that allows access to 
+#' stored, and cretes a ENVI Meta file and/or a GDAL vrt file that allows access to
 #' the full time series as if it was a single physical file
 #' @param out_prod_folder string main output folder
-#' @param meta_band string "name" of the band (or index, or qi) for which the 
+#' @param meta_band string "name" of the band (or index, or qi) for which the
 #' virtual file is to be created
-#' @param file_prefixes string file_prefixes for terra and aqua - used to identify 
+#' @param file_prefixes string file_prefixes for terra and aqua - used to identify
 #' the files corresponding to each sensor
-#' @param sens_sel string name of the sensor for which the time serie has to be 
+#' @param sens_sel string name of the sensor for which the time serie has to be
 #' created (Aqua, Terra, Mixed) If "Mixed" and both terra and aqua
-#' images are available, a "mixed" virtual file comprising data from both sensors 
+#' images are available, a "mixed" virtual file comprising data from both sensors
 #' ordered on DOY base is created
 #' @param ts_format string required output format for virtual file (ENVI, GDAL, Both)
-#' @param nodata_value string nodata value to be used for vrt files 
+#' @param nodata_value string nodata value to be used for vrt files
 #' (equal to nodata value of inputs)
-#' @param out_format format of images used as "input" for the vrt and contained 
+#' @param out_format format of images used as "input" for the vrt and contained
 #' in out_prod_folder/band folders (ENVI or GTiff)
 #' @param rts string ("Yes"/"No") If Yes, create rts time series
 #' @return NULL - virtual files are stored in the "Time Series" subfolder of out_prod_folder
@@ -157,7 +156,7 @@ MODIStsp_vrt_create <- function(out_prod_folder, meta_band, file_prefixes,
                                                    year_min, doy_max, year_max,
                                                    "GDAL_vrt.vrt",
                                                    sep = "_"))
-        gdalbuildvrt(out_meta_files, meta_filename, separate = TRUE, 
+        gdalUtils::gdalbuildvrt(out_meta_files, meta_filename, separate = TRUE,
                      srcnodata = nodata_value, vrtnodata = nodata_value)
 
       } # end If on necessity to build R Stack files

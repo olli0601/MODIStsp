@@ -2,7 +2,7 @@
 % Please edit documentation in R/MODIStest_check_md5.R
 \name{MODIStest_check_md5}
 \alias{MODIStest_check_md5}
-\title{MODIStest_check_md5}
+\title{test rsesults of tests against MD5 of test outputs}
 \usage{
 MODIStest_check_md5(test)
 }
@@ -10,14 +10,16 @@ MODIStest_check_md5(test)
 \item{test}{integer number of the performed test}
 }
 \description{
-internal function which tests if the output of a test is corresponds to the expected one.
+internal function which tests if the output of a test
+corresponds to the expected one.
 }
 \details{
-When running in test mode, MODIStsp is expected to produce the same files
+When running in test mode, MODIStsp is expected to produce files
+with the same MD5 values as test files created using a stable (working)
+version
 }
 \note{
 License: GPL 3.0
-license GPL 3.0
 }
 \author{
 Luigi Ranghetti, phD (2017) \email{ranghetti.l@irea.cnr.it}
